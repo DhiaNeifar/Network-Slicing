@@ -8,7 +8,8 @@ def generate_random_values(low, high, size):
 
 def test_solution(_solution, _required_cpus, _total_available_cpus):
 
-    consumed_cpu_per_center = np.sum(np.sum(_required_cpus[:, :, np.newaxis] * _solution, axis=0), axis=0, dtype=np.int16)
+    consumed_cpu_per_center = np.sum(np.sum(_required_cpus[:, :, np.newaxis] * _solution, axis=0),
+                                     axis=0, dtype=np.int16)
     print(_total_available_cpus)
     print(consumed_cpu_per_center)
 
@@ -18,11 +19,7 @@ def test_solution(_solution, _required_cpus, _total_available_cpus):
     print(Constraint_1)
 
     # Test if constraint 2 is verified
-
-
-
     print(_solution)
-    pass
 
 
 def network_slicing(_number_VNFs, _number_slices, _total_number_centers, _required_cpus, _total_available_cpus):
@@ -68,11 +65,8 @@ def network_slicing(_number_VNFs, _number_slices, _total_number_centers, _requir
 
     # Solve
     problem.solve()
-    solution = np.vectorize(pulp.value)(VNFs_placements)
-    deployed_slices = np.vectorize(pulp.value)(binary_variables)
-    print(deployed_slices)
-    return solution
-    pass
+
+    return np.vectorize(pulp.value)(VNFs_placements), np.vectorize(pulp.value)(binary_variables)
 
 
 def main():
@@ -88,9 +82,8 @@ def main():
     number_slices = 10
     number_VNFs = 6
     required_cpus = generate_random_values(1, 21, (number_slices, number_VNFs))
-    solution = network_slicing(number_VNFs, number_slices, total_number_centers, required_cpus, total_available_cpus)
+    solution, _ = network_slicing(number_VNFs, number_slices, total_number_centers, required_cpus, total_available_cpus)
     test_solution(solution, required_cpus, total_available_cpus)
-    pass
 
 
 if __name__ == '__main__':
