@@ -35,6 +35,23 @@ def test_solution(_solution, _deployed_slices, _required_cpus, _total_available_
     _print('Solution', _solution)
 
 
+def define_topology(number_edge=2, number_cloud=3):
+    _number_edge = number_edge
+    _number_cloud = number_cloud
+    _total_number_centers = _number_cloud + _number_edge
+    available_edge_cpus = generate_random_values(10, 41, number_edge)
+    available_cloud_cpus = generate_random_values(20, 201, number_cloud)
+    _total_available_cpus = np.concatenate((available_edge_cpus, available_cloud_cpus), axis=0, dtype=np.int16)
+    return _total_number_centers, _total_available_cpus
+
+
+def define_slices(number_slices=1, number_VNFs=6):
+    _number_slices = number_slices
+    _number_VNFs = number_VNFs
+    _required_cpus = generate_random_values(1, 21, (number_slices, number_VNFs))
+    return _required_cpus
+
+
 def network_slicing(_number_VNFs, _number_slices, _total_number_centers, _required_cpus, _total_available_cpus):
     problem = pulp.LpProblem('Network_Slicing', pulp.LpMaximize)
 
@@ -78,34 +95,23 @@ def network_slicing(_number_VNFs, _number_slices, _total_number_centers, _requir
         constraint += 1
 
     # Solve
-    problem.solve()
+    problem.solve(pulp.PULP_CBC_CMD(msg=False))
 
     return np.vectorize(pulp.value)(VNFs_placements), np.vectorize(pulp.value)(binary_variables)
 
 
-def define_topology(number_edge=2, number_cloud=3):
-    _number_edge = number_edge
-    _number_cloud = number_cloud
-    _total_number_centers = _number_cloud + _number_edge
-    available_edge_cpus = generate_random_values(10, 41, number_edge)
-    available_cloud_cpus = generate_random_values(20, 201, number_cloud)
-    _total_available_cpus = np.concatenate((available_edge_cpus, available_cloud_cpus), axis=0, dtype=np.int16)
-    return _total_number_centers, _total_available_cpus
-
-
-def define_slices(number_slices=10, number_VNFs=6):
-    _number_slices = 10
-    _number_VNFs = 6
-    required_cpus = generate_random_values(1, 21, (number_slices, number_VNFs))
-    return _number_slices, _number_VNFs, required_cpus
-
-
 def main():
     # Define topology
-    total_number_centers, total_available_cpus = define_topology()
+    number_edge = 2
+    number_cloud = 3
+    total_number_centers, total_available_cpus = define_topology(number_edge=number_edge, number_cloud=number_cloud)
 
     # Define slices
-    number_slices, number_VNFs, required_cpus = define_slices()
+    number_slices = 1
+    number_VNFs = 6
+    required_cpus = define_slices(number_slices=number_slices, number_VNFs=number_VNFs)
+
+    # MILP
     solution, deployed_slices = network_slicing(number_VNFs, number_slices,
                                                 total_number_centers, required_cpus, total_available_cpus)
     test_solution(solution, deployed_slices, required_cpus, total_available_cpus)
