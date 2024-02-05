@@ -46,14 +46,12 @@ def define_topology(number_edge=2, number_cloud=3):
 
 
 def define_slices(number_slices=1, number_VNFs=6):
-    _number_slices = number_slices
-    _number_VNFs = number_VNFs
     _required_cpus = generate_random_values(1, 21, (number_slices, number_VNFs))
     return _required_cpus
 
 
 def network_slicing(_number_VNFs, _number_slices, _total_number_centers, _required_cpus, _total_available_cpus):
-    problem = pulp.LpProblem('Network_Slicing', pulp.LpMaximize)
+    problem = pulp.LpProblem('Network_Slicing', pulp.LpMinimize)
 
     VNFs_placements = np.array([[[pulp.LpVariable(f'center_{k}_slice_{j}_VNF_{i}', cat=pulp.LpBinary)
                                   for k in range(_total_number_centers)]

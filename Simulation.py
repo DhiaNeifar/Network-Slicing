@@ -1,4 +1,6 @@
 import numpy as np
+import pickle
+import os
 
 from MILP import define_topology, define_slices, network_slicing, _print
 
@@ -10,6 +12,15 @@ def is_deployed(_index, _deployed):
     else:
         message += 'not deployed!'
     return message
+
+
+def save_pickle(_dict):
+    for key, value in _dict.items():
+        pickle.dump(value, open(os.path.join('pickle data', f'{key}.pkl'), 'wb'))
+
+
+def all_deployed(_deployed):
+    return np.all(np.array(_deployed) == 1)
 
 
 def used_cpus(_solution, _required_cpus):
@@ -27,7 +38,7 @@ def Simulation():
     number_slices = 1
     number_VNFs = 6
 
-    lambda_, mu = 1.0, 1.0
+    lambda_, mu = 1.0, 0.05
     num_slices = 500
     inter_arrival_times = np.random.exponential(1 / lambda_, num_slices)
     arrival_times = np.cumsum(inter_arrival_times)
@@ -42,7 +53,7 @@ def Simulation():
     departure_times = np.array(departure_times)[sorted_indices]
     sorted_slices_indices = np.array(unsorted_slices_indices)[sorted_indices]
     _print('Total Available CPUs', total_available_cpus)
-    consumed_cpu_list = []
+    consumed_cpu_list, deployed_list = [], []
 
     i, j = 0, 0
     while i < num_slices:
@@ -52,7 +63,7 @@ def Simulation():
 
             solution, deployed = network_slicing(number_VNFs, number_slices, total_number_centers, required_cpus,
                                                  remaining_available_cpus)
-
+            deployed_list.append(deployed[0])
             _print('Remaining Available CPUs', remaining_available_cpus)
             print(is_deployed(i + 1, deployed))
             consumed_cpu_per_center = used_cpus(solution, required_cpus)
@@ -72,13 +83,17 @@ def Simulation():
         remaining_available_cpus += consumed_cpu_list[j]
         _print('Remaining Available CPUs', remaining_available_cpus)
         j += 1
-    pass
-
-
-def main():
-    Simulation()
-    pass
+    data = {
+        'total_available_cpus': total_available_cpus,
+        'arrival_times': arrival_times,
+        'departure_times': departure_times,
+        'deployed': deployed_list,
+        'sorted_slices_indices': sorted_slices_indices,
+        'remaining_available_cpus': remaining_available_cpus,
+        'consumed_cpu_list': consumed_cpu_list
+    }
+    save_pickle(data)
 
 
 if __name__ == '__main__':
-    main()
+    Simulation()
