@@ -33,6 +33,8 @@ def EpidemicSlicingSimulation(arrival_times, departure_times, centers, failure_t
     total_deployed, total_failed = [0 for _ in range(num_slices)], [0 for _ in range(num_slices)]
     slice_state = [0 for _ in range(num_slices)]
     system_performance = []
+    print('Available CPUs per Node:\n')
+    print(total_remaining_cpus)
     while i < len(arrival_times) or j < len(departure_times) or k < len(failure_times):
         val1 = arrival_times[i] if i < len(arrival_times) else None
         val2 = departure_times[j] if j < len(departure_times) else None
@@ -48,6 +50,10 @@ def EpidemicSlicingSimulation(arrival_times, departure_times, centers, failure_t
                                                                     total_remaining_cpus, centers_task_execution_delay,
                                                                     edges_adjacency_matrix, total_remaining_bandwidth,
                                                                     edges_delay, total_resources_consumed)
+            print('Solution:\n')
+            print(solution)
+            print('Remaining CPUs:\n')
+            print(total_remaining_cpus)
             solutions.append(solution)
             if is_deployed:
                 slice_state[i] = 1
