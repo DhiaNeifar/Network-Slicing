@@ -10,15 +10,10 @@ def calc_consumed_resources(solution, required_resources, total_available_resour
     return total_available_resources - consumed_resources
 
 
-def embedding(number_VNFS, total_number_centers, total_remaining_cpus, centers_task_execution_delay,
-              edges_adjacency_matrix, total_remaining_bandwidth, edges_delay, total_resources_consumed):
-    (number_VNFs, required_cpus, required_bandwidth, VNFs_task_execution_delay, E2E_delay) = slice_instantiation(
-        number_VNFS)
-
-    solution, is_deployed = network_slicing(total_number_centers, total_remaining_cpus, centers_task_execution_delay,
-                                            edges_adjacency_matrix, total_remaining_bandwidth, edges_delay, number_VNFs,
-                                            required_cpus, required_bandwidth, VNFs_task_execution_delay, E2E_delay)
-
-    total_remaining_cpus = calc_consumed_resources(solution, required_cpus, total_remaining_cpus,
-                                                   total_resources_consumed)
-    return solution, int(is_deployed), total_remaining_cpus
+def embedding(number_slices, number_VNFs, total_number_centers, total_available_cpus, centers_task_execution_delay,
+              edges_adjacency_matrix, total_available_bandwidth, edges_delay):
+    (required_cpus, required_bandwidth, VNFs_task_execution_delay, E2E_delay) = slice_instantiation(number_slices,
+                                                                                                    number_VNFs)
+    return network_slicing(number_slices, total_number_centers, total_available_cpus, centers_task_execution_delay,
+                           edges_adjacency_matrix, total_available_bandwidth, edges_delay, number_VNFs, required_cpus,
+                           required_bandwidth, VNFs_task_execution_delay, E2E_delay)

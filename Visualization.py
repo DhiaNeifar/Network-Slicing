@@ -9,8 +9,9 @@ from EpidemicSpreadingSimulation import EpidemicSlicingSimulation
 
 
 def Visualization():
+    number_nodes = 50
     (total_number_centers, total_available_cpus, centers_task_execution_delay, edges_adjacency_matrix,
-     total_available_bandwidth, edges_delay) = graph_topology()
+     total_available_bandwidth, edges_delay) = graph_topology(number_nodes)
     num_slices = 500
     arrival_times, departure_times = timeline(alpha=1.0, beta=0.01, num_slices=num_slices)
 
@@ -21,7 +22,7 @@ def Visualization():
     spreads = [5, 1]
     for spread in spreads:
         centers, failure_times = EpidemicModel(total_number_centers, edges_adjacency_matrix, initial_center,
-                                               initial_time, spread=spread)
+                                               spread=spread)
         system_performance, time_line, centers, failure_times = EpidemicSlicingSimulation(arrival_times,
                                                                                           departure_times,
                                                                                           centers, failure_times)

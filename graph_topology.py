@@ -2,8 +2,7 @@ import xml.etree.ElementTree as ET
 import os
 import numpy as np
 
-
-from Towards_Secure_Slicing import generate_random_values
+from utils import generate_random_values
 
 
 def calc_distance(lat1, lon1, lat2, lon2):
@@ -19,7 +18,7 @@ def calc_distance(lat1, lon1, lat2, lon2):
     return R * c / 300
 
 
-def graph_topology(filename='ATT North America.xml'):
+def graph_topology(number_nodes, filename='ATT North America.xml'):
     tree = ET.parse(os.path.join(os.getcwd(), 'Graphs', filename))
     root = tree.getroot()
     root = root.find('graph')
@@ -33,7 +32,6 @@ def graph_topology(filename='ATT North America.xml'):
         longitude.append(float(root[index][1].text))
         latitude.append(float(root[index][5].text))
         index += 1
-
     edges_adjacency_matrix = np.zeros((total_number_centers, total_number_centers))
     edges_delay = np.zeros((total_number_centers, total_number_centers))
     total_available_bandwidth = np.zeros((total_number_centers, total_number_centers))
@@ -42,16 +40,20 @@ def graph_topology(filename='ATT North America.xml'):
         attributes = root[index].attrib
         source, target = int(attributes['source']), int(attributes['target'])
         edges_adjacency_matrix[source, target], edges_adjacency_matrix[target, source] = 1, 1
-        edges_delay[source, target] = calc_distance(longitude[source], latitude[source], longitude[target], latitude[target])
+        edges_delay[source, target] = calc_distance(longitude[source], latitude[source], longitude[target],
+                                                    latitude[target])
         edges_delay[target, source] = edges_delay[source, target]
         total_available_bandwidth[source, target] = generate_random_values(150, 200, 1)[0]
         total_available_bandwidth[target, source] = total_available_bandwidth[source, target]
         index += 1
 
-    total_available_cpus = generate_random_values(80, 200, total_number_centers)
+    total_number_centers = min(total_number_centers, number_nodes)
+    total_available_cpus = generate_random_values(80, 400, total_number_centers)
     centers_task_execution_delay = generate_random_values(0.01, 0.31, total_number_centers, _type='float')
-    return (total_number_centers, total_available_cpus, centers_task_execution_delay, edges_adjacency_matrix,
-            total_available_bandwidth, edges_delay)
+    return (total_number_centers, total_available_cpus, centers_task_execution_delay,
+            edges_adjacency_matrix[:total_number_centers, :total_number_centers],
+            total_available_bandwidth[:total_number_centers, :total_number_centers],
+            edges_delay[:total_number_centers, :total_number_centers])
 
 
 
