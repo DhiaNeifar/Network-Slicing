@@ -10,6 +10,7 @@ def main():
     number_VNFs = 2
     required_cpus, required_bandwidth = slice_instantiation(number_slices, number_VNFs=number_VNFs)
 
+
     solution, virtual_links, are_deployed = network_slicing(number_slices, total_number_centers, total_available_cpus,
                                                             edges_adjacency_matrix, total_available_bandwidth,
                                                             number_VNFs, required_cpus, required_bandwidth)

@@ -34,19 +34,19 @@ def network_slicing(number_slices, total_number_centers, total_available_cpus, e
 
     # Node Embedding Constraints
 
-    # Constraint 1: Each VNF is assigned to an exactly one center.
-    for s in range(number_slices):
-        for c in range(total_number_centers):
-            problem += (pulp.LpAffineExpression([(VNFs_placements[s, k, c], 1)
-                                                 for k in range(number_VNFs)]) <= number_VNFs,
-                        f'constraint {constraint}')
-            constraint += 1
-
-    # Constraint 2: Each VNF is assigned only once to a center.
+    # Constraint 1: Each VNF is assigned only once to a center.
     for s in range(number_slices):
         for k in range(number_VNFs):
             problem += (pulp.LpAffineExpression([(VNFs_placements[s, k, c], 1)
                                                  for c in range(total_number_centers)]) == 1,
+                        f'constraint {constraint}')
+            constraint += 1
+
+    # Constraint 2: Each VNF is assigned to an exactly one center.
+    for s in range(number_slices):
+        for c in range(total_number_centers):
+            problem += (pulp.LpAffineExpression([(VNFs_placements[s, k, c], 1)
+                                                 for k in range(number_VNFs)]) <= 1,
                         f'constraint {constraint}')
             constraint += 1
 
@@ -81,11 +81,18 @@ def network_slicing(number_slices, total_number_centers, total_available_cpus, e
                             VNFs_placements[s, k, i] - VNFs_placements[s, k + 1, i], f'constraint {constraint}')
                 constraint += 1
 
-    # # Constraint 4.1: Avoid loops while embedding a virtual link
-    # # for c in range(total_number_centers):
-    #
-    # Solve
-    # problem.solve()
+    # Constraint 2: Guarantee that allocated throughput resources do not exceed physical links' throughput capacity.
+    for i in range(edges_adjacency_matrix.shape[0]):
+        for j in range(edges_adjacency_matrix.shape[1]):
+            problem += (pulp.LpAffineExpression([(Virtual_links[s, k, i, j], required_bandwidth[s, k])
+                                                 for s in range(number_slices)
+                                                for k in range(number_VNFs - 1)]) <= total_available_bandwidth[i, j]
+                        , f'constraint {constraint}')
+            constraint += 1
+
+    # Delay Tolerance Constraint
+
+
     solver = pulp.CPLEX_CMD(path=r"C:\Program Files\IBM\ILOG\CPLEX_Studio_Community2211\cplex\bin\x64_win64\cplex.exe")
     problem.solve(solver)
     return (np.vectorize(pulp.value)(VNFs_placements), np.vectorize(pulp.value)(Virtual_links),
