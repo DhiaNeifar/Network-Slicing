@@ -3,7 +3,9 @@ import pulp
 
 
 def network_slicing(number_slices, total_number_centers, total_available_cpus, edges_adjacency_matrix,
-                    total_available_bandwidth, number_VNFs, required_cpus, required_bandwidth):
+                    total_available_bandwidth, edges_delay, number_VNFs, required_cpus, required_bandwidth,
+                    delay_tolerance):
+
     problem = pulp.LpProblem('Network_Slicing', pulp.LpMinimize)
 
     VNFs_placements = np.array([[[pulp.LpVariable(f'slice_{s}_center_{c}_VNF_{k}', cat=pulp.LpBinary)
@@ -21,13 +23,13 @@ def network_slicing(number_slices, total_number_centers, total_available_cpus, e
     problem += (pulp.LpAffineExpression([(VNFs_placements[s, k, c], required_cpus[s, k])
                                          for s in range(number_slices)
                                          for k in range(number_VNFs)
-                                         for c in range(total_number_centers)]), 'Objective')
+                                         for c in range(total_number_centers)]) +
+                pulp.LpAffineExpression([(Virtual_links[s, k, i, j], required_bandwidth[s, k] + edges_delay[i, j])
+                                         for s in range(number_slices)
+                                         for k in range(number_VNFs - 1)
+                                         for i in range(edges_adjacency_matrix.shape[0])
+                                         for j in range(edges_adjacency_matrix.shape[1])]), 'Objective')
 
-    # # + pulp.LpAffineExpression([(Virtual_links[s, t, i, j], edges_delay[i, j])
-    # #                                      for s in range(edges_adjacency_matrix.shape[0])
-    # #                                      for t in range(edges_adjacency_matrix.shape[1])
-    # #                                      for i in range(edges_adjacency_matrix.shape[0])
-    # #                                      for j in range(edges_adjacency_matrix.shape[1])]), 'Objective')
 
     # Constraints
     constraint = 0
@@ -86,11 +88,18 @@ def network_slicing(number_slices, total_number_centers, total_available_cpus, e
         for j in range(edges_adjacency_matrix.shape[1]):
             problem += (pulp.LpAffineExpression([(Virtual_links[s, k, i, j], required_bandwidth[s, k])
                                                  for s in range(number_slices)
-                                                for k in range(number_VNFs - 1)]) <= total_available_bandwidth[i, j]
-                        , f'constraint {constraint}')
+                                                for k in range(number_VNFs - 1)]) <= total_available_bandwidth[i, j],
+                        f'constraint {constraint}')
             constraint += 1
 
     # Delay Tolerance Constraint
+    for s in range(number_slices):
+        problem += (pulp.LpAffineExpression([(Virtual_links[s, k, i, j], edges_delay[i, j])
+                                             for k in range(number_VNFs - 1)
+                                             for i in range(edges_adjacency_matrix.shape[0])
+                                             for j in range(edges_adjacency_matrix.shape[1])]) <= delay_tolerance[s],
+                    f'constraint {constraint}')
+        constraint += 1
 
 
     solver = pulp.CPLEX_CMD(path=r"C:\Program Files\IBM\ILOG\CPLEX_Studio_Community2211\cplex\bin\x64_win64\cplex.exe")
