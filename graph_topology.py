@@ -49,8 +49,9 @@ def graph_topology(number_nodes, filename='ATT North America.xml'):
 
     total_number_centers = min(total_number_centers, number_nodes)
     total_available_cpus = generate_random_values(10000, 10001, total_number_centers)
+    # total_available_cpus[0] = 0
     # centers_task_execution_delay = generate_random_values(0.01, 0.31, total_number_centers, _type='float')
-    return (total_number_centers, total_available_cpus,
+    return (total_number_centers, total_available_cpus, longitude, latitude,
             edges_adjacency_matrix[:total_number_centers, :total_number_centers],
             total_available_bandwidth[:total_number_centers, :total_number_centers],
             edges_delay[:total_number_centers, :total_number_centers])

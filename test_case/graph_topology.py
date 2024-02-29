@@ -3,7 +3,7 @@ import numpy as np
 
 def graph_topology():
     total_number_centers = 3
-    total_available_cpus = np.array([18, 29, 20], dtype=np.int16)
+    total_available_cpus = np.array([17, 26, 14], dtype=np.int16)
 
     edges_adjacency_matrix = np.zeros((total_number_centers, total_number_centers), dtype=np.int8)
     total_available_bandwidth = np.zeros((total_number_centers, total_number_centers), dtype=np.int16)
