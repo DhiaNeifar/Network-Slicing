@@ -1,64 +1,63 @@
 import numpy as np
 
-
-from Embedding import embedding
 from graph_topology import graph_topology
 from EpidemicModel import EpidemicModel
+from slice_instantiation import slice_instantiation
+from network_slicing import network_slicing
+from Visualization import Visualize_Substrate
 
 
-def calc_performance(slice_state, total_deployed, total_failed):
-    count_current, count_deployed, count_failed = 0, 0, 0
-    for index, state in enumerate(slice_state):
-        if state:
-            count_current += 1
-            if total_deployed[index]:
-                count_deployed += 1
-            if total_failed[index]:
-                count_failed += 1
-    if count_current:
-        return (count_deployed - count_failed) / count_current * 100
-    return 0.0
-
-
-def EpidemicSlicingSimulation(number_slices, total_number_centers, total_available_cpus, centers_task_execution_delay,
-                              edges_adjacency_matrix, total_available_bandwidth, edges_delay, Rounds):
+def EpidemicSlicingSimulation(total_number_centers, total_available_cpus, edges_adjacency_matrix, longitude, latitude,
+                              total_available_bandwidth, edges_delay, Rounds):
+    number_slices = 5
     number_VNFs = 6
+
+    required_cpus, required_bandwidth, delay_tolerance = slice_instantiation(number_slices, number_VNFs)
+
+    print(required_cpus)
+
     solutions = []
     system_performance = []
     are_deployed = []
-    for Round in Rounds:
+    print('Starting Epidemic Slicing')
+    print(f'Rounds = {Rounds}')
+    for round_index, Round in enumerate(Rounds[:-1], 1):
+        print(f'Round {round_index}')
         if Round:
             for center in Round:
                 total_available_cpus[center] = 0
+        failed_centers = [x for curr_round in Rounds[:round_index] for x in curr_round]
         # Embedding
-        solution, slices_deployed = embedding(number_slices, number_VNFs, total_number_centers, total_available_cpus,
-                                              centers_task_execution_delay, edges_adjacency_matrix,
-                                              total_available_bandwidth, edges_delay)
-        solutions.append(solution)
-        are_deployed.append(slices_deployed)
-        curr_system_performance = np.sum(slices_deployed) / len(slices_deployed)
-        system_performance.append(curr_system_performance)
+        (solution, virtual_links, are_deployed, unassigned_cpus) = network_slicing(number_slices, total_number_centers,
+                                                                                   total_available_cpus,
+                                                                                   edges_adjacency_matrix,
+                                                                                   total_available_bandwidth,
+                                                                                   edges_delay, number_VNFs,
+                                                                                   required_cpus, required_bandwidth,
+                                                                                   delay_tolerance, failed_centers)
+
         print(solution)
-        print(slices_deployed)
-        print(curr_system_performance)
+        print(virtual_links)
+        print(are_deployed)
+        print(unassigned_cpus)
+        Visualize_Substrate(total_number_centers, longitude, latitude, edges_adjacency_matrix, solution, virtual_links,
+                            round_index, failed_centers)
     return system_performance, are_deployed, solutions
 
 
 def main():
     number_nodes = 10
-    (total_number_centers, total_available_cpus, centers_task_execution_delay, edges_adjacency_matrix,
-     total_available_bandwidth, edges_delay) = graph_topology(number_nodes)
-    number_slices = 15
+    (total_number_centers, total_available_cpus, longitude, latitude, edges_adjacency_matrix, total_available_bandwidth,
+     edges_delay) = graph_topology(number_nodes)
+
     initial_center = np.random.choice(total_number_centers)
-    spread = 0.3
+    spread = 0.1
     Rounds = EpidemicModel(total_number_centers, edges_adjacency_matrix, initial_center, spread=spread)
-    system_performance, are_deployed, solutions = EpidemicSlicingSimulation(number_slices, total_number_centers,
-                                                                            total_available_cpus,
-                                                                            centers_task_execution_delay,
-                                                                            edges_adjacency_matrix,
+
+    system_performance, are_deployed, solutions = EpidemicSlicingSimulation(total_number_centers, total_available_cpus,
+                                                                            edges_adjacency_matrix, longitude, latitude,
                                                                             total_available_bandwidth, edges_delay,
                                                                             Rounds)
-    print(Rounds)
 
 
 if __name__ == '__main__':

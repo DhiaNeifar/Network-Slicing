@@ -1,6 +1,3 @@
-import numpy as np
-
-
 from graph_topology import graph_topology
 from slice_instantiation import slice_instantiation
 from network_slicing import network_slicing

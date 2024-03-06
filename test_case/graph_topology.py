@@ -12,8 +12,8 @@ def graph_topology():
     edges_adjacency_matrix[0, 1], edges_adjacency_matrix[1, 0] = 1, 1
     edges_adjacency_matrix[1, 2], edges_adjacency_matrix[2, 1] = 1, 1
 
-    total_available_bandwidth[0, 1], total_available_bandwidth[1, 0] = 0, 7
-    total_available_bandwidth[1, 2], total_available_bandwidth[2, 1] = 5, 4
+    total_available_bandwidth[0, 1], total_available_bandwidth[1, 0] = 0, 5
+    total_available_bandwidth[1, 2], total_available_bandwidth[2, 1] = 2, 1
 
     edges_delay[0, 1], edges_delay[1, 0] = 0.05, 0.05
     edges_delay[1, 2], edges_delay[2, 1] = 0.25, 0.25

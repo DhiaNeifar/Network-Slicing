@@ -25,6 +25,14 @@ def flexible_network_slicing(number_slices, total_number_centers, total_availabl
                                for k in range(number_VNFs - 1)]
                               for s in range(number_slices)])
 
+
+    missing_TP = np.array([[[[pulp.LpVariable(f'missing_TP_slice_{s}_VL{k}_to_VL{k + 1}_PN{i}_to_PN{j}',
+                                              cat=pulp.LpInteger, lowBound=0)
+                              for j in range(edges_adjacency_matrix.shape[1])]
+                             for i in range(edges_adjacency_matrix.shape[0])]
+                            for k in range(number_VNFs - 1)]
+                           for s in range(number_slices)])
+
     '''
     Minimization Problem
     The following objective function focuses on minimizing the consumption of resources. If all constraints are met, 
@@ -42,14 +50,22 @@ def flexible_network_slicing(number_slices, total_number_centers, total_availabl
     
     '''
 
-    # Minimization Problem
     '''
-        This objective function aims to minimize the total unmet CPU requirements.
+        Minimization Problem
+        
+        This objective function aims to minimize the total unmet CPU and ThroughPut requirements.
+    
     '''
+
     problem += (pulp.LpAffineExpression([(unassigned_cpus[s, k, c], 1)
                                          for s in range(number_slices)
                                          for k in range(number_VNFs)
-                                         for c in range(total_number_centers)]), 'Objective')
+                                         for c in range(total_number_centers)]) +
+                pulp.LpAffineExpression([(missing_TP[s, k, i, j], 1)
+                                         for s in range(number_slices)
+                                         for k in range(number_VNFs - 1)
+                                         for i in range(edges_adjacency_matrix.shape[0])
+                                         for j in range(edges_adjacency_matrix.shape[1])]), 'Objective')
 
 
     # Constraints
@@ -104,28 +120,31 @@ def flexible_network_slicing(number_slices, total_number_centers, total_availabl
                 constraint += 1
 
     # Constraint 2: Guarantee that allocated throughput resources do not exceed physical links' throughput capacity.
+
     for i in range(edges_adjacency_matrix.shape[0]):
         for j in range(edges_adjacency_matrix.shape[1]):
-            problem += (pulp.LpAffineExpression([(Virtual_links[s, k, i, j], required_bandwidth[s, k])
-                                                 for s in range(number_slices)
-                                                for k in range(number_VNFs - 1)]) <= total_available_bandwidth[i, j],
+            problem += (pulp.lpSum([(Virtual_links[s, k, i, j] * required_bandwidth[s, k]) - missing_TP[s, k, i, j]
+                                   for s in range(number_slices)
+                                   for k in range(number_VNFs - 1)]) <= total_available_bandwidth[i, j],
                         f'constraint {constraint}')
             constraint += 1
 
+
     # Delay Tolerance Constraint
-    for s in range(number_slices):
-        problem += (pulp.LpAffineExpression([(Virtual_links[s, k, i, j], edges_delay[i, j])
-                                             for k in range(number_VNFs - 1)
-                                             for i in range(edges_adjacency_matrix.shape[0])
-                                             for j in range(edges_adjacency_matrix.shape[1])]) <= delay_tolerance[s],
-                    f'constraint {constraint}')
-        constraint += 1
+    # for s in range(number_slices):
+    #     problem += (pulp.LpAffineExpression([(Virtual_links[s, k, i, j], edges_delay[i, j])
+    #                                          for k in range(number_VNFs - 1)
+    #                                          for i in range(edges_adjacency_matrix.shape[0])
+    #                                          for j in range(edges_adjacency_matrix.shape[1])]) <= delay_tolerance[s],
+    #                 f'constraint {constraint}')
+    #     constraint += 1
 
 
     solver = pulp.CPLEX_CMD(path=r"C:\Program Files\IBM\ILOG\CPLEX_Studio_Community2211\cplex\bin\x64_win64\cplex.exe")
     problem.solve(solver)
     return (np.vectorize(pulp.value)(VNFs_placements), np.vectorize(pulp.value)(Virtual_links),
-            np.vectorize(pulp.value)(binary_variables), np.vectorize(pulp.value)(unassigned_cpus))
+            np.vectorize(pulp.value)(binary_variables), np.vectorize(pulp.value)(unassigned_cpus),
+            np.vectorize(pulp.value)(missing_TP))
 
 
 if __name__ == '__main__':

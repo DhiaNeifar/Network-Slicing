@@ -43,13 +43,12 @@ def graph_topology(number_nodes, filename='ATT North America.xml'):
         edges_delay[source, target] = calc_distance(longitude[source], latitude[source], longitude[target],
                                                     latitude[target])
         edges_delay[target, source] = edges_delay[source, target]
-        total_available_bandwidth[source, target] = generate_random_values(20000, 20001, 1)[0]
+        total_available_bandwidth[source, target] = generate_random_values(40, 81, 1)[0]
         total_available_bandwidth[target, source] = total_available_bandwidth[source, target]
         index += 1
 
     total_number_centers = min(total_number_centers, number_nodes)
-    total_available_cpus = generate_random_values(10000, 10001, total_number_centers)
-    # total_available_cpus[0] = 0
+    total_available_cpus = generate_random_values(60, 81, total_number_centers)
     # centers_task_execution_delay = generate_random_values(0.01, 0.31, total_number_centers, _type='float')
     return (total_number_centers, total_available_cpus, longitude, latitude,
             edges_adjacency_matrix[:total_number_centers, :total_number_centers],

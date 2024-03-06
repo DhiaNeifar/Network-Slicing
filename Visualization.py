@@ -5,7 +5,8 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 matplotlib.use('TkAgg')
 
 
-def Visualize_Substrate(total_number_centers, longitude, latitude, edges_adjacency_matrix, solution, virtual_links):
+def Visualize_Substrate(total_number_centers, longitude, latitude, edges_adjacency_matrix, solution, virtual_links,
+                        round_index, failed_centers):
     virtual_links = np.logical_or.reduce(virtual_links, axis=1)
     virtual_links = virtual_links.astype(np.float16)
     fig = plt.figure()
@@ -15,6 +16,10 @@ def Visualize_Substrate(total_number_centers, longitude, latitude, edges_adjacen
     for c in range(total_number_centers):
         ax.scatter(longitude[c], latitude[c], 0, color=tab20(0), s=100)
         ax.text(longitude[c], latitude[c], z=0, s=f'node{c + 1}')
+
+
+    for c in failed_centers:
+        ax.scatter(longitude[c], latitude[c], 0, color='black', s=100)
 
     for i in range(total_number_centers):
         for j in range(i, total_number_centers):
@@ -50,7 +55,7 @@ def Visualize_Substrate(total_number_centers, longitude, latitude, edges_adjacen
                 [x_limits[1], y_limits[1], jump * s], [x_limits[0], y_limits[1], jump * s]]
                 for s in range(number_slices + 1)]
 
-    poly = Poly3DCollection(vertices, alpha=0.3)
+    poly = Poly3DCollection(vertices, alpha=0.2)
     colors = [tab20(2 * s) for s in range(number_slices + 1)]
     poly.set_facecolor(colors)
     ax.add_collection3d(poly)
@@ -60,7 +65,5 @@ def Visualize_Substrate(total_number_centers, longitude, latitude, edges_adjacen
     ax.set_ylabel('Latitude')
     ax.set_zlabel('Slices')
 
-
-    plt.show()
-
-
+    fig.savefig(rf'D:\PhD\Network Slicing\Meetings\Weekly Meetings\03 - 05\Round {round_index}.png')
+    # plt.show()
