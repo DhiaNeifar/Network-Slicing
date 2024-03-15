@@ -18,7 +18,7 @@ def calc_distance(lat1, lon1, lat2, lon2):
     return R * c / 300
 
 
-def graph_topology(number_nodes, filename='ATT North America.xml'):
+def graph_topology(number_nodes, filename='compuserve.xml'):
     tree = ET.parse(os.path.join(os.getcwd(), 'Graphs', filename))
     root = tree.getroot()
     root = root.find('graph')
@@ -30,7 +30,7 @@ def graph_topology(number_nodes, filename='ATT North America.xml'):
     while root[index].tag == 'node':
         total_number_centers += 1
         longitude.append(float(root[index][1].text))
-        latitude.append(float(root[index][5].text))
+        latitude.append(float(root[index][4].text))
         index += 1
     edges_adjacency_matrix = np.zeros((total_number_centers, total_number_centers))
     edges_delay = np.zeros((total_number_centers, total_number_centers))
@@ -48,7 +48,7 @@ def graph_topology(number_nodes, filename='ATT North America.xml'):
         index += 1
 
     total_number_centers = min(total_number_centers, number_nodes)
-    total_available_cpus = generate_random_values(60, 81, total_number_centers)
+    total_available_cpus = generate_random_values(40, 41, total_number_centers)
     # centers_task_execution_delay = generate_random_values(0.01, 0.31, total_number_centers, _type='float')
     return (total_number_centers, total_available_cpus, longitude, latitude,
             edges_adjacency_matrix[:total_number_centers, :total_number_centers],

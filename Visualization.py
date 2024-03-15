@@ -65,5 +65,5 @@ def Visualize_Substrate(total_number_centers, longitude, latitude, edges_adjacen
     ax.set_ylabel('Latitude')
     ax.set_zlabel('Slices')
 
-    fig.savefig(rf'D:\PhD\Network Slicing\Meetings\Weekly Meetings\03 - 05\Round {round_index}.png')
-    # plt.show()
+    # fig.savefig(rf'D:\PhD\Network Slicing\Meetings\Weekly Meetings\03 - 05\Round {round_index}.png')
+    plt.show()
