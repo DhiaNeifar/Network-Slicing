@@ -4,7 +4,7 @@ import numpy as np
 def EpidemicModel(total_number_centers, edges_adjacency_matrix, initial_center, spread=0.5):
     failed_centers = [0 for _ in range(total_number_centers)]
     failed_centers[initial_center] = 1
-    Rounds = [[initial_center]]
+    Rounds = [[], [initial_center]]
     while sum(failed_centers) != len(failed_centers):
         Round = []
         for center, state in enumerate(failed_centers):

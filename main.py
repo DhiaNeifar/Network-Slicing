@@ -19,7 +19,7 @@ def consumed_cpus(total_available_cpus, required_cpus, solution):
 
 
 def main():
-    number_nodes = 10
+    number_nodes = 12
     (total_number_centers, total_available_cpus, longitude, latitude, edges_adjacency_matrix, total_available_bandwidth,
      edges_delay) = graph_topology(number_nodes)
 
