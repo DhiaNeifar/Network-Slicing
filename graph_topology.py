@@ -18,7 +18,7 @@ def calc_distance(lat1, lon1, lat2, lon2):
     return R * c / 300
 
 
-def graph_topology(number_nodes, filename='compuserve.xml'):
+def graph_topology(number_nodes, start=0, filename='compuserve.xml'):
     tree = ET.parse(os.path.join(os.getcwd(), 'Graphs', filename))
     root = tree.getroot()
     root = root.find('graph')
@@ -46,14 +46,15 @@ def graph_topology(number_nodes, filename='compuserve.xml'):
         total_available_bandwidth[source, target] = generate_random_values(40, 81, 1)[0] if target != 11 else 10000
         total_available_bandwidth[target, source] = total_available_bandwidth[source, target]
         index += 1
-    total_number_centers = min(total_number_centers, number_nodes)
-    total_available_cpus = generate_random_values(40, 41, total_number_centers)
+    total_number_centers = min(total_number_centers, number_nodes) - start
+    total_available_cpus = generate_random_values(50, 61, total_number_centers)
     total_available_cpus[-1] = 10000
     # centers_task_execution_delay = generate_random_values(0.01, 0.31, total_number_centers, _type='float')
-    return (total_number_centers, total_available_cpus, longitude, latitude,
-            edges_adjacency_matrix[:total_number_centers, :total_number_centers],
-            total_available_bandwidth[:total_number_centers, :total_number_centers],
-            edges_delay[:total_number_centers, :total_number_centers])
+    return (total_number_centers, total_available_cpus, longitude[start: total_number_centers + start],
+            latitude[start: total_number_centers + start],
+            edges_adjacency_matrix[start: total_number_centers + start, start: total_number_centers + start],
+            total_available_bandwidth[start: total_number_centers + start, start: total_number_centers + start],
+            edges_delay[start: total_number_centers + start, start: total_number_centers + start])
 
 
 

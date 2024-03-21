@@ -61,7 +61,13 @@ def network_slicing(number_slices, total_number_centers, total_available_cpus, e
     '''
 
     # Objective Function
-    problem += (pulp.LpAffineExpression([(Virtual_links[s, k, i, j], edges_delay[i, j])
+
+
+
+    problem += (pulp.LpAffineExpression([(VNFs_placements[s, k, -1], 1)
+                                         for s in range(number_slices)
+                                         for k in range(number_VNFs)]) +
+                pulp.LpAffineExpression([(Virtual_links[s, k, i, j], required_bandwidth[s, k] + edges_delay[i, j])
                                          for s in range(number_slices)
                                          for k in range(number_VNFs - 1)
                                          for i in range(edges_adjacency_matrix.shape[0])
@@ -98,12 +104,13 @@ def network_slicing(number_slices, total_number_centers, total_available_cpus, e
         constraint += 1
 
     # Constraint 4: Guarantee that per slice, at least one VNF is mapped to real center and not the virtual node.
-    for s in range(number_slices):
-        problem += (pulp.LpAffineExpression([(VNFs_placements[s, k, c], 1)
-                                             for k in range(number_VNFs)
-                                             for c in range(total_number_centers - 1)]) >= 1,
-                    f'constraint {constraint}')
-        constraint += 1
+    if len(failed_centers) < total_number_centers - 1:
+        for s in range(number_slices):
+            problem += (pulp.LpAffineExpression([(VNFs_placements[s, k, c], 1)
+                                                 for k in range(number_VNFs)
+                                                 for c in range(total_number_centers - 1)]) >= 1,
+                        f'constraint {constraint}')
+            constraint += 1
 
 
     # Link Embedding Constraints

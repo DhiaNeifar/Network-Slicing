@@ -1,7 +1,10 @@
 import numpy as np
 
 
-def EpidemicModel(total_number_centers, edges_adjacency_matrix, initial_center, spread=0.5):
+def EpidemicModel(total_number_centers, edges_adjacency_matrix, spread=0.5):
+    total_number_centers -= 1
+    edges_adjacency_matrix = edges_adjacency_matrix[:-1, :-1]
+    initial_center = np.random.choice(total_number_centers)
     failed_centers = [0 for _ in range(total_number_centers)]
     failed_centers[initial_center] = 1
     Rounds = [[], [initial_center]]
