@@ -12,8 +12,8 @@ from Visualization import Visualize_Substrate
 def EpidemicSlicingSimulation(total_number_centers, total_available_cpus, edges_adjacency_matrix, longitude, latitude,
                               total_available_bandwidth, edges_delay, Rounds):
 
-    number_slices = 5
-    number_VNFs = 6
+    number_slices = 4
+    number_VNFs = 4
 
     required_cpus, required_bandwidth, delay_tolerance = slice_instantiation(number_slices, number_VNFs)
 
@@ -31,6 +31,12 @@ def EpidemicSlicingSimulation(total_number_centers, total_available_cpus, edges_
         failed_centers.extend(Round)
         scaled_required_cpus = scale(total_available_cpus, required_cpus)
 
+
+        print(total_available_cpus)
+        print(required_cpus)
+        print(scaled_required_cpus)
+
+
         # Embedding
         solution, virtual_links = network_slicing(number_slices, total_number_centers, total_available_cpus,
                                                   edges_adjacency_matrix, total_available_bandwidth, edges_delay,
@@ -43,10 +49,19 @@ def EpidemicSlicingSimulation(total_number_centers, total_available_cpus, edges_
 
 
 def main():
-    number_nodes = 12
-    start = 3
+    number_nodes = 8
     (total_number_centers, total_available_cpus, longitude, latitude, edges_adjacency_matrix, total_available_bandwidth,
-     edges_delay) = graph_topology(number_nodes, start)
+     edges_delay) = graph_topology(number_nodes)
+
+
+    print(total_number_centers)
+    print(total_available_cpus)
+    print(longitude)
+    print(latitude)
+    print(edges_adjacency_matrix)
+    print(total_available_bandwidth)
+    print(edges_delay)
+
 
     Rounds = EpidemicModel(total_number_centers, edges_adjacency_matrix, spread=0.4)
 

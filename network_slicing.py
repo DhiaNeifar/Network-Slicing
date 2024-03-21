@@ -92,7 +92,8 @@ def network_slicing(number_slices, total_number_centers, total_available_cpus, e
     for s in range(number_slices):
         for c in range(total_number_centers):
             problem += (pulp.LpAffineExpression([(VNFs_placements[s, k, c], 1) for k in range(number_VNFs)]) <= ceil(
-                number_VNFs // max(1, (total_number_centers - len(failed_centers)))) + 1, f'constraint {constraint}')
+                number_VNFs // max(1, (total_number_centers - 1 - len(failed_centers)))) + 1,
+                        f'constraint {constraint}')
             constraint += 1
 
     # Constraint 3: Guarantee that allocated VNF resources do not exceed physical servers' processing capacity.
@@ -144,7 +145,8 @@ def network_slicing(number_slices, total_number_centers, total_available_cpus, e
     #     constraint += 1
 
     # solver = pulp.CPLEX_CMD(path=r"C:\Program Files\IBM\ILOG\CPLEX_Studio_Community2211\cplex\bin\x64_win64\cplex.exe")
-    problem.solve()
+    solver = pulp.getSolver('CPLEX_CMD')
+    problem.solve(solver)
     return np.vectorize(pulp.value)(VNFs_placements), np.vectorize(pulp.value)(Virtual_links)
 
 

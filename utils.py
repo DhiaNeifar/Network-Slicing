@@ -8,6 +8,7 @@ def generate_random_values(low, high, size, _type='int'):
 
 
 def scale(total_available_cpus, required_cpus):
+    total_available_cpus = total_available_cpus[:-1]
     sum_available = np.sum(total_available_cpus, dtype=np.int16)
     sum_required = np.sum(required_cpus, dtype=np.int16)
     if sum_available and sum_available < sum_required:
