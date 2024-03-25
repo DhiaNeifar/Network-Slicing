@@ -6,7 +6,7 @@ matplotlib.use('TkAgg')
 
 
 def Visualize_Substrate(total_number_centers, longitude, latitude, edges_adjacency_matrix, solution, virtual_links,
-                        round_index, failed_centers):
+                        failed_centers):
     virtual_links = np.logical_or.reduce(virtual_links, axis=1)
     virtual_links = virtual_links.astype(np.float16)
     fig = plt.figure()

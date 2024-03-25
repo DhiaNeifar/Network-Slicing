@@ -19,14 +19,16 @@ def consumed_cpus(total_available_cpus, required_cpus, solution):
 
 
 def main():
-    number_nodes = 12
+    number_nodes = 8
     (total_number_centers, total_available_cpus, longitude, latitude, edges_adjacency_matrix, total_available_bandwidth,
      edges_delay) = graph_topology(number_nodes)
 
-    number_slices = 5
-    number_VNFs = 6
+    number_slices = 4
+    number_VNFs = 4
+
     failed_centers = []
     required_cpus, required_bandwidth, delay_tolerance = slice_instantiation(number_slices, number_VNFs=number_VNFs)
+
     print(total_available_cpus)
     print(required_cpus)
     solution, virtual_links = network_slicing(number_slices, total_number_centers, total_available_cpus,

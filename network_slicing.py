@@ -64,9 +64,17 @@ def network_slicing(number_slices, total_number_centers, total_available_cpus, e
 
 
 
-    problem += (pulp.LpAffineExpression([(VNFs_placements[s, k, -1], 1)
+    problem += (pulp.LpAffineExpression([(VNFs_placements[s, k, total_number_centers - 1], 100000)
                                          for s in range(number_slices)
                                          for k in range(number_VNFs)]) +
+                pulp.LpAffineExpression([(Virtual_links[s, k, edges_adjacency_matrix.shape[0] - 1, j], 100000)
+                                         for s in range(number_slices)
+                                         for k in range(number_VNFs - 1)
+                                         for j in range(edges_adjacency_matrix.shape[1])]) +
+                pulp.LpAffineExpression([(Virtual_links[s, k, i, edges_adjacency_matrix.shape[1] - 1], 100000)
+                                         for s in range(number_slices)
+                                         for k in range(number_VNFs - 1)
+                                         for i in range(edges_adjacency_matrix.shape[0])]) +
                 pulp.LpAffineExpression([(Virtual_links[s, k, i, j], required_bandwidth[s, k] + edges_delay[i, j])
                                          for s in range(number_slices)
                                          for k in range(number_VNFs - 1)
@@ -144,9 +152,9 @@ def network_slicing(number_slices, total_number_centers, total_available_cpus, e
     #                 delay_tolerance[s], f'constraint {constraint}')
     #     constraint += 1
 
-    # solver = pulp.CPLEX_CMD(path=r"C:\Program Files\IBM\ILOG\CPLEX_Studio_Community2211\cplex\bin\x64_win64\cplex.exe")
-    solver = pulp.getSolver('CPLEX_CMD')
-    problem.solve(solver)
+    # solver = pulp.CPLEX_CMD(path=r"C:\Program Files\IBM\ILOG\CPLEX_Studio_Community2211\cplex\bin\x64_win64\cplex.exe",
+    #                         keepFiles=False, mip=True, msg=False)
+    problem.solve()
     return np.vectorize(pulp.value)(VNFs_placements), np.vectorize(pulp.value)(Virtual_links)
 
 

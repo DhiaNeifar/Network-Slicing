@@ -41,13 +41,13 @@ def graph_topology(number_node, filename='compuserve.xml'):
         source, target = int(attributes['source']), int(attributes['target'])
         edges_adjacency_matrix[source, target], edges_adjacency_matrix[target, source] = 1, 1
         edges_delay[source, target] = calc_distance(longitude[source], latitude[source], longitude[target],
-                                                    latitude[target]) if target != 11 else 10000
+                                                    latitude[target]) if target != 11 else 0
         edges_delay[target, source] = edges_delay[source, target]
-        total_available_bandwidth[source, target] = generate_random_values(40, 81, 1)[0] if target != 11 else 10000
+        total_available_bandwidth[source, target] = generate_random_values(60, 81, 1)[0] if target != 11 else 10000
         total_available_bandwidth[target, source] = total_available_bandwidth[source, target]
         index += 1
     start = total_number_centers - number_node
-    total_available_cpus = generate_random_values(50, 61, number_node)
+    total_available_cpus = generate_random_values(40, 51, number_node)
     total_available_cpus[-1] = 10000
     # centers_task_execution_delay = generate_random_values(0.01, 0.31, total_number_centers, _type='float')
     return (number_node, total_available_cpus, longitude[start:], latitude[start:],
