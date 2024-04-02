@@ -67,11 +67,11 @@ def network_slicing(number_slices, total_number_centers, total_available_cpus, e
     problem += (pulp.LpAffineExpression([(VNFs_placements[s, k, total_number_centers - 1], 100000)
                                          for s in range(number_slices)
                                          for k in range(number_VNFs)]) +
-                pulp.LpAffineExpression([(Virtual_links[s, k, edges_adjacency_matrix.shape[0] - 1, j], 100000)
+                pulp.LpAffineExpression([(Virtual_links[s, k, edges_adjacency_matrix.shape[0] - 1, j], 1000)
                                          for s in range(number_slices)
                                          for k in range(number_VNFs - 1)
                                          for j in range(edges_adjacency_matrix.shape[1])]) +
-                pulp.LpAffineExpression([(Virtual_links[s, k, i, edges_adjacency_matrix.shape[1] - 1], 100000)
+                pulp.LpAffineExpression([(Virtual_links[s, k, i, edges_adjacency_matrix.shape[1] - 1], 1000)
                                          for s in range(number_slices)
                                          for k in range(number_VNFs - 1)
                                          for i in range(edges_adjacency_matrix.shape[0])]) +
@@ -79,7 +79,8 @@ def network_slicing(number_slices, total_number_centers, total_available_cpus, e
                                          for s in range(number_slices)
                                          for k in range(number_VNFs - 1)
                                          for i in range(edges_adjacency_matrix.shape[0])
-                                         for j in range(edges_adjacency_matrix.shape[1])]), 'Objective')
+                                         for j in range(edges_adjacency_matrix.shape[1])]),
+                'Objective')
 
 
 
@@ -98,7 +99,7 @@ def network_slicing(number_slices, total_number_centers, total_available_cpus, e
 
     # Constraint 2: Each VNF is assigned to an exactly one center.
     for s in range(number_slices):
-        for c in range(total_number_centers):
+        for c in range(total_number_centers - 1):
             problem += (pulp.LpAffineExpression([(VNFs_placements[s, k, c], 1) for k in range(number_VNFs)]) <= ceil(
                 number_VNFs // max(1, (total_number_centers - 1 - len(failed_centers)))) + 1,
                         f'constraint {constraint}')

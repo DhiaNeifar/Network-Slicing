@@ -1,28 +1,29 @@
 import numpy as np
 
 
-from graph_topology import graph_topology
-from EpidemicModel import EpidemicModel
-from slice_instantiation import slice_instantiation
-from utils import scale, save_results
+from utils import load_data, save_results
 from network_slicing import network_slicing
-from Visualization import Visualize_Substrate
 
 
 def EpidemicSlicingSimulation():
-    number_nodes = 9
-    (total_number_centers, total_available_cpus, longitude, latitude, edges_adjacency_matrix, total_available_bandwidth,
-     edges_delay) = graph_topology(number_nodes)
+    data = load_data()
+    number_nodes = data['number_nodes']
+    total_number_centers = data['total_number_centers']
+    total_available_cpus = data['total_available_cpus']
+    longitude = data['longitude']
+    latitude = data['latitude']
+    edges_adjacency_matrix = data['edges_adjacency_matrix']
+    total_available_bandwidth = data['total_available_bandwidth']
+    edges_delay = data['edges_delay']
+    Spread = data['Spread']
+    Rounds = data['Rounds']
+    number_slices = data['number_slices']
+    number_VNFs = data['number_VNFs']
+    required_cpus = data['required_cpus']
+    required_bandwidth = data['required_bandwidth']
+    delay_tolerance = data['delay_tolerance']
 
-
-    _total_available_cpus = np.copy(total_available_cpus)
-    Spread = 0.4
-    Rounds = EpidemicModel(total_number_centers, edges_adjacency_matrix, spread=Spread)
-
-    number_slices = 5
-    number_VNFs = 6
-
-    required_cpus, required_bandwidth, delay_tolerance = slice_instantiation(number_slices, number_VNFs)
+    total_available_cpus_copy = np.copy(total_available_cpus)
 
     VNFs_placements = []
     virtual_links = []
@@ -36,23 +37,24 @@ def EpidemicSlicingSimulation():
             for center in Round:
                 total_available_cpus[center] = 0
         failed_centers.extend(Round)
-        scaled_required_cpus = scale(total_available_cpus, required_cpus)
+
+        # No Scaling
+
+        # scaled_required_cpus = scale(total_available_cpus, required_cpus)
 
         # Embedding
         solution = network_slicing(number_slices, total_number_centers, total_available_cpus, edges_adjacency_matrix,
-                                   total_available_bandwidth, edges_delay, number_VNFs, scaled_required_cpus,
+                                   total_available_bandwidth, edges_delay, number_VNFs, required_cpus,
                                    required_bandwidth, delay_tolerance, failed_centers)
         VNFs_placements.append(solution[0])
         virtual_links.append(solution[1])
 
-        Visualize_Substrate(total_number_centers, longitude, latitude, edges_adjacency_matrix, solution[0], solution[1],
-                            failed_centers)
 
     # Results
 
     data = {'number_nodes': number_nodes,
             'total_number_centers': total_number_centers,
-            'total_available_cpus': _total_available_cpus,
+            'total_available_cpus': total_available_cpus_copy,
             'longitude': longitude,
             'latitude': latitude,
             'edges_adjacency_matrix': edges_adjacency_matrix,
