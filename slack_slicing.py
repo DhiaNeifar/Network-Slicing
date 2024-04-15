@@ -21,12 +21,12 @@ def slack_slicing(number_slices, total_number_centers, total_available_cpus, edg
                                for k in range(number_VNFs - 1)]
                               for s in range(number_slices)])
 
-    slack_variables = np.array([pulp.LpVariable(f'slack_variable_center_{c}', cat=pulp.LpBinary)
+    slack_variables = np.array([pulp.LpVariable(f'slack_variable_center_{c}', cat=pulp.LpInteger)
                                 for c in range(total_number_centers)])
 
     for failed_center in failed_centers:
-        slack_variables[failed_center] = pulp.LpVariable(f'slack_variable_center_{failed_center}', lowBound=0,
-                                                         upBound=0)
+        slack_variables[failed_center] = pulp.LpVariable(f'slack_variable_center_{failed_center}', cat=pulp.LpInteger,
+                                                         lowBound=0, upBound=0)
     # Objective Function
 
     problem += (pulp.LpAffineExpression([(slack_variables[c], 1)

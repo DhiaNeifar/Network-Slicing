@@ -20,11 +20,11 @@ def physical_substrate(number_node):
         edges_adjacency_matrix[source, target], edges_adjacency_matrix[target, source] = 1, 1
         edges_delay[source, target] = generate_random_values(0, 1, 1, _type='ah')[0]
         edges_delay[target, source] = edges_delay[source, target]
-        total_available_bandwidth[source, target] = generate_random_values(80, 101, 1)[0]
+        total_available_bandwidth[source, target] = generate_random_values(150, 201, 1)[0]
         total_available_bandwidth[target, source] = total_available_bandwidth[source, target]
 
     total_number_centers = min(total_number_centers, number_node)
-    total_available_cpus = generate_random_values(40, 51, number_node)
+    total_available_cpus = generate_random_values(40, 61, number_node)
 
     return (total_number_centers, total_available_cpus, longitude[:total_number_centers],
             latitude[:total_number_centers], edges_adjacency_matrix[:total_number_centers, :total_number_centers],

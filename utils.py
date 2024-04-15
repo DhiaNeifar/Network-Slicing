@@ -48,7 +48,7 @@ def save_results(data_tosave):
 def load_data():
     data = {}
     results = os.path.join(os.getcwd(), 'results')
-    test_path = os.path.join(results, f'Test {len(os.listdir(results)) - 2}')
+    test_path = os.path.join(results, f'Test {len(os.listdir(results))}')
     for filename in os.listdir(test_path):
         data[filename[:-4]] = pickle.load(open(os.path.join(test_path, filename), 'rb'))
     return data

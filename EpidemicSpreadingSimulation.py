@@ -10,7 +10,7 @@ from Visualization import Visualize_Substrate
 
 
 def EpidemicSlicingSimulation():
-    number_nodes = 5
+    number_nodes = 8
     (total_number_centers, total_available_cpus, longitude, latitude, edges_adjacency_matrix, total_available_bandwidth,
      edges_delay) = physical_substrate(number_nodes)
 
@@ -19,8 +19,8 @@ def EpidemicSlicingSimulation():
     Spread = 0.3
     Rounds = EpidemicModel(total_number_centers, edges_adjacency_matrix, spread=Spread)
 
-    number_slices = 3
-    number_VNFs = 2
+    number_slices = 5
+    number_VNFs = 6
 
     required_cpus, required_bandwidth, delay_tolerance = slice_instantiation(number_slices, number_VNFs)
 
