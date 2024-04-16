@@ -89,7 +89,9 @@ def slack_slicing(number_slices, total_number_centers, total_available_cpus, edg
                         f'constraint {constraint}')
             constraint += 1
 
-    problem.solve()
+    status = problem.solve()
+    if status == pulp.LpStatusOptimal:
+        print("Solution is optimal.")
     return (np.vectorize(pulp.value)(VNFs_placements), np.vectorize(pulp.value)(Virtual_links),
             np.vectorize(pulp.value)(slack_variables))
 

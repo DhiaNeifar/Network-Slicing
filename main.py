@@ -9,12 +9,9 @@ from Visualization import Visualize_Substrate
 
 def consumed_cpus(total_available_cpus, required_cpus, solution):
     consumed_ = solution * required_cpus[:, :, np.newaxis]
-    print(consumed_)
     consumed_slices = consumed_.sum(axis=0).sum(axis=0)
+    print(total_available_cpus)
     print(consumed_slices)
-    print(required_cpus.sum(axis=0).sum(axis=0) == consumed_slices.sum(axis=0))
-    objective = (total_available_cpus - consumed_slices).sum(axis=0)
-    print(objective)
 
 
 
