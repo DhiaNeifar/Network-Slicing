@@ -1,68 +1,48 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import to_rgba
+from matplotlib.patches import Patch
 
-# Example data setup
-number_nodes = 7
-number_slices = 3
-number_vnfs = 5
+from utils import check_cpus_consumption
 
-# Generate data
-np.random.seed(0)  # Seed for reproducibility
-required_cpus = np.random.randint(1, 5, (number_slices, number_vnfs))
-VNFs_placement = np.zeros((number_slices, number_vnfs, number_nodes), dtype=int)
-for s in range(number_slices):
-    for v in range(number_vnfs):
-        node = np.random.choice(number_nodes)
-        VNFs_placement[s, v, node] = 1
 
-total_available_cpus = np.random.randint(10, 20, number_nodes)
+def system_performance(total_number_centers, total_available_cpus, assigned_cpus, VNFs_placements, alpha):
+    fig, ax = plt.subplots()
+    bar = None
+    tab20 = plt.get_cmap('tab20')
+    node_labels = [f"Node {i + 1}" for i in range(total_number_centers)]
+    patterns = ['/', '\\', 'x', '|', 'o', 'O', '.', '*']
 
-# CPU usage calculation
-cpu_usage = np.zeros((number_nodes, number_slices * number_vnfs))
-for node in range(number_nodes):
+    consumed_cpus = VNFs_placements * assigned_cpus[:, :, np.newaxis]
+    check_cpus_consumption(total_available_cpus, assigned_cpus, VNFs_placements)
+    number_slices, number_VNFs, total_number_centers = consumed_cpus.shape
+    bottom = np.zeros(total_number_centers)
+
     for s in range(number_slices):
-        for v in range(number_vnfs):
-            if VNFs_placement[s, v, node] == 1:
-                cpu_demand = required_cpus[s, v]
-                # Prevent exceeding total available CPUs
-                if np.sum(cpu_usage[node, :]) + cpu_demand > total_available_cpus[node]:
-                    cpu_demand = total_available_cpus[node] - np.sum(cpu_usage[node, :])
-                cpu_usage[node, s * number_vnfs + v] = cpu_demand
+        for k in range(number_VNFs):
+            consumed_cpu = consumed_cpus[s, k, :]
+            for c in range(total_number_centers):
+                if consumed_cpu[c]:
+                    consumed_cpu[c] = consumed_cpu[c] * 100 / total_available_cpus[c]
+                ax.bar(node_labels, consumed_cpu, bottom=bottom, color=tab20(2 * s), hatch=patterns[k])
 
-# Normalization
-cpu_percentages = (cpu_usage.T / total_available_cpus).T * 100
+            bottom += consumed_cpu
 
-# Plotting
-fig, ax = plt.subplots()
-base_colors = plt.cm.tab10(np.linspace(0, 1, number_slices))
-patterns = [None, '/', '\\', '+', 'x', '-', '|', 'o', 'O', '.', '*']
+    unused_cpu = 100 - bottom
+    ax.bar(node_labels, unused_cpu, bottom=bottom, color='grey', label='Unused')
+    ax.set_ylim([0, 110])
+    ax.set_ylabel(f'CPU Usage (%)', fontsize=13)
+    alpha_text = f'$\\alpha = {alpha}$'
+    if alpha != 1:
+        alpha_text = f'$\\alpha = {alpha:.2f}$'
+    ax.set_title(f'CPU Utilization by Node | {alpha_text}', fontsize=17)
 
-node_labels = [f"Node {i+1}" for i in range(number_nodes)]
-bottom = np.zeros(number_nodes)
+    color_patches = [Patch(facecolor=tab20(2 * i), label=f'Slice {i + 1}') for i in range(number_slices)]
+    pattern_patches = [Patch(facecolor='white', edgecolor='black', hatch=patterns[i], label=f'VNF {i + 1}') for i in range(number_VNFs)]
+    unused_patch = Patch(facecolor='grey', label='Unused CPU')
 
-for s in range(number_slices):
-    for v in range(number_vnfs):
-        i = s * number_vnfs + v
-        color = to_rgba(base_colors[s], alpha=(1 - v / number_vnfs * 0.5))  # Gradually fade the color
-        ax.bar(node_labels, cpu_percentages[:, i], bottom=bottom, color=color, hatch=patterns[v % len(patterns)],
-               label=f'Slice {s} VNF {v}' if bottom.sum() == 0 else None)  # Label only first instance
-        bottom += cpu_percentages[:, i]
+    # Combine all patches for the legend
+    ax.legend(handles=[unused_patch] + color_patches + pattern_patches, bbox_to_anchor=(1.005, 1), loc='upper left')
 
-# Unused CPU
-unused_cpu = 100 - bottom
-ax.bar(node_labels, unused_cpu, bottom=bottom, color='grey', label='Unused')
+    plt.show()
+    pass
 
-ax.set_ylabel('CPU Usage (%)')
-ax.set_title('CPU Utilization by Node')
-
-# Custom legend for patterns
-handles, labels = ax.get_legend_handles_labels()
-pattern_handles = [plt.Rectangle((0,0),1,1, fill=False, edgecolor='none', visible=False)] * len(patterns)
-for i, pattern in enumerate(patterns):
-    pattern_handles[i].set_hatch(pattern)
-    pattern_handles[i].set_label(f'Pattern {i}')
-
-ax.legend(handles=handles + pattern_handles, title="VNFs", bbox_to_anchor=(1.05, 1), loc='upper left')
-
-plt.show()

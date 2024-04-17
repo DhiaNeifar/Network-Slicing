@@ -1,7 +1,8 @@
 from math import ceil
 
-from utils import load_data, scale, consumed_cpus
+from utils import load_data, check_cpus_consumption
 from Visualization import Visualize_Substrate
+from system_performance import system_performance
 
 
 def main():
@@ -18,7 +19,7 @@ def main():
     virtual_links = data['virtual_links']
     Rounds = data['Rounds']
     assigned_cpus = data['assigned_cpus']
-    print(required_cpus)
+    alpha = data['alpha']
     print('Starting Epidemic Slicing')
     print(f'Rounds = {Rounds}')
     failed_centers = []
@@ -30,10 +31,11 @@ def main():
         failed_centers.extend(Round)
         print('Maximum Number VNFs per node ',
               ceil(number_VNFs // max(1, (total_number_centers - 1 - len(failed_centers)))) + 1)
-        consumed_cpus(total_available_cpus, assigned_cpus[round_index], VNFs_placements[round_index])
+        assigned = assigned_cpus[round_index] * alpha[round_index]
+        check_cpus_consumption(total_available_cpus, assigned, VNFs_placements[round_index])
         Visualize_Substrate(total_number_centers, longitude, latitude, edges_adjacency_matrix,
                             VNFs_placements[round_index], virtual_links[round_index], failed_centers)
-
+        system_performance(total_number_centers, total_available_cpus, assigned, VNFs_placements[round_index], alpha[round_index])
 
 
 if __name__ == '__main__':

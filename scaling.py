@@ -23,6 +23,7 @@ def scaling(status, parameters):
     while status_ == pulp.LpStatusOptimal:
         status, solution = status_, solution_
         alpha += 0.01
+        parameters[7] += required_cpus_units
         status_, solution_ = fairness_slicing(*parameters)
 
     return status, solution, alpha
