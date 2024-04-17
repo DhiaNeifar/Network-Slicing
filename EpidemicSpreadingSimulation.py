@@ -5,10 +5,10 @@ import pulp
 from substrate import physical_substrate
 from EpidemicModel import EpidemicModel
 from slice_instantiation import slice_instantiation
-from utils import save_results
+from utils import save_results, consumed_cpus
 from fairness_slicing import fairness_slicing
-from Visualization import Visualize_Substrate
-from main import consumed_cpus
+from scaling import scaling
+# from Visualization import Visualize_Substrate
 
 
 def EpidemicSlicingSimulation():
@@ -23,11 +23,6 @@ def EpidemicSlicingSimulation():
     number_slices = 4
     number_VNFs = 4
     required_cpus, required_bandwidth, delay_tolerance = slice_instantiation(number_slices, number_VNFs)
-
-    required_cpus_ = np.copy(required_cpus)
-    required_cpus_ = required_cpus_.astype(np.float32)
-    required_cpus_decimals = required_cpus_ * 0.1
-    required_cpus_units = required_cpus_ * 0.01
 
     VNFs_placements = []
     virtual_links = []
@@ -48,40 +43,23 @@ def EpidemicSlicingSimulation():
         # Embedding
         status, solution = fairness_slicing(number_slices, total_number_centers, total_available_cpus,
                                             edges_adjacency_matrix, total_available_bandwidth, edges_delay, number_VNFs,
-                                            required_cpus_, required_bandwidth, delay_tolerance, failed_centers)
+                                            required_cpus, required_bandwidth, delay_tolerance, failed_centers)
 
-        while status == pulp.LpStatusInfeasible:
-            print("Solution not solved.")
-            required_cpus_ -= required_cpus_decimals
-            required_cpus_ = np.trunc(required_cpus_ * 1000) / 1000
-            fairness -= 0.1
-            status, solution = fairness_slicing(number_slices, total_number_centers, total_available_cpus,
-                                                edges_adjacency_matrix, total_available_bandwidth, edges_delay,
-                                                number_VNFs, required_cpus_, required_bandwidth, delay_tolerance,
-                                                failed_centers)
+        if status == pulp.LpStatusInfeasible:
+            parameters = [number_slices, total_number_centers, total_available_cpus, edges_adjacency_matrix,
+                          total_available_bandwidth, edges_delay, number_VNFs, required_cpus, required_bandwidth,
+                          delay_tolerance, failed_centers]
+            status, solution, alpha = scaling(status, parameters)
+            fairness = alpha
 
-        status_, solution_ = fairness_slicing(number_slices, total_number_centers, total_available_cpus,
-                                              edges_adjacency_matrix, total_available_bandwidth, edges_delay,
-                                              number_VNFs, required_cpus_ + required_cpus_units, required_bandwidth,
-                                              delay_tolerance, failed_centers)
-        while fairness < 1 and status_ == pulp.LpStatusOptimal:
-            solution = solution_
-            print("Solution is optimal.")
-            required_cpus_ += required_cpus_units
-            fairness += 0.01
-            required_cpus_ = np.trunc(required_cpus_ * 1000) / 1000
-            status_, solution_ = fairness_slicing(number_slices, total_number_centers, total_available_cpus,
-                                                  edges_adjacency_matrix, total_available_bandwidth, edges_delay,
-                                                  number_VNFs, required_cpus_ + required_cpus_units, required_bandwidth,
-                                                  delay_tolerance, failed_centers)
-        consumed_cpus(total_available_cpus, required_cpus_, solution[0])
+        consumed_cpus(total_available_cpus, fairness * required_cpus, solution[0])
         VNFs_placements.append(solution[0])
         virtual_links.append(solution[1])
         fairness_.append(fairness)
-        assigned_cpus.append(required_cpus_)
+        assigned_cpus.append(required_cpus)
 
-        Visualize_Substrate(total_number_centers, longitude, latitude, edges_adjacency_matrix, solution[0],
-                            solution[1], failed_centers)
+        # Visualize_Substrate(total_number_centers, longitude, latitude, edges_adjacency_matrix, solution[0],
+        #                     solution[1], failed_centers)
 
     # Results
 
@@ -103,6 +81,7 @@ def EpidemicSlicingSimulation():
             'VNFs_placements': VNFs_placements,
             'virtual_links': virtual_links,
             'fairness': fairness_,
+            'assigned_cpus': assigned_cpus
             }
     save_results(data)
     return

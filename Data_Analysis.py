@@ -17,8 +17,8 @@ def main():
     VNFs_placements = data['VNFs_placements']
     virtual_links = data['virtual_links']
     Rounds = data['Rounds']
-    fairness = data['fairness']
-
+    assigned_cpus = data['assigned_cpus']
+    print(required_cpus)
     print('Starting Epidemic Slicing')
     print(f'Rounds = {Rounds}')
     failed_centers = []
@@ -27,11 +27,10 @@ def main():
         if Round:
             for center in Round:
                 total_available_cpus[center] = 0
-        consumed_cpus(total_available_cpus, required_cpus, VNFs_placements[round_index])
         failed_centers.extend(Round)
         print('Maximum Number VNFs per node ',
               ceil(number_VNFs // max(1, (total_number_centers - 1 - len(failed_centers)))) + 1)
-        print('fairness ', fairness[round_index])
+        consumed_cpus(total_available_cpus, assigned_cpus[round_index], VNFs_placements[round_index])
         Visualize_Substrate(total_number_centers, longitude, latitude, edges_adjacency_matrix,
                             VNFs_placements[round_index], virtual_links[round_index], failed_centers)
 

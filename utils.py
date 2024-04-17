@@ -27,9 +27,7 @@ def scale(total_available_cpus, required_cpus):
 
 def consumed_cpus(total_available_cpus, required_cpus, solution):
     print(total_available_cpus)
-    print(required_cpus)
     consumed_ = solution * required_cpus[:, :, np.newaxis]
-    print(consumed_)
     consumed_slices = consumed_.sum(axis=0).sum(axis=0)
     print(consumed_slices)
 
